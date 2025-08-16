@@ -31,6 +31,6 @@ func main() {
 		w.Write([]byte("Hello, World!"))
 	}).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":3030", nil))
+	log.Fatal(http.ListenAndServe(":3030", router))
 
 }
