@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Imjaopedro/firstGoProject/config"
+	"github.com/Imjaopedro/firstGoProject/handlers"
 	"github.com/Imjaopedro/firstGoProject/models"
 	"github.com/gorilla/mux"
 )
@@ -24,12 +25,12 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/tasks", func(w http.ResponseWriter,
-		r *http.Request) {
+	TaskHandler := handlers.NewTaskHandler(dbConnection)
 
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Hello, World!"))
-	}).Methods("GET")
+	router.HandleFunc("/tasks", TaskHandler.ReadTasks).Methods("GET")
+	router.HandleFunc("/tasks", TaskHandler.CreateTask).Methods("POST")
+	router.HandleFunc("/task/{id}", TaskHandler.UpdateTask).Methods("PUT")
+	router.HandleFunc("/task/{id}", TaskHandler.DeleteTask).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":3030", router))
 
