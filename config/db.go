@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/Imjaopedro/firstGoProject/models"
 	_ "modernc.org/sqlite"
 )
 
@@ -15,10 +13,7 @@ import (
 // conceito de Singleton
 func SetUpDatabase() *sql.DB {
 	dbPath := "./meubanco.db"
-	connString := fmt.Sprintf("%s", dbPath)
-
-	// driver correto para modernc.org/sqlite
-	db, err := sql.Open("sqlite", connString)
+	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		panic(err)
 	}
@@ -28,24 +23,17 @@ func SetUpDatabase() *sql.DB {
 		panic(err)
 	}
 
-	fmt.Println("Conexão com SQLite aberta com Sucesso")
-	return db
-}
-
-func handleShutdown(db *sql.DB) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	<-c // espera o sinal
-
-	fmt.Println("\nShutting down... Dropping table tasks")
-	_, err := db.Exec("DROP TABLE IF EXISTS tasks")
+	// reset da tabela no início, não no shutdown
+	_, err = db.Exec("DROP TABLE IF EXISTS tasks")
 	if err != nil {
-		log.Println("Erro ao dropar a tabela tasks:", err)
-	} else {
-		log.Println("Tabela tasks deletada com sucesso!")
+		log.Println("Erro ao dropar tabela:", err)
 	}
 
-	db.Close()
-	os.Exit(0)
+	_, err = db.Exec(models.CreateTableSQL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Conexão com SQLite aberta e tabela tasks criada")
+	return db
 }
